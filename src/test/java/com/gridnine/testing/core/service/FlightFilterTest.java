@@ -51,7 +51,7 @@ class FlightFilterTest {
     @Test
     void getFlightByCriteriaShouldReturnSpecificFlightsIfTransferTimeMoreThanTwoHoursSpecified() {
         when(flightSearchCriteria.getTransferTimeMoreThan2Hours()).thenReturn(true);
-        assertEquals(1, flightFilter.getFlightsByCriteria(flights).size());
+        assertEquals(2, flightFilter.getFlightsByCriteria(flights).size());
     }
 
     @Test

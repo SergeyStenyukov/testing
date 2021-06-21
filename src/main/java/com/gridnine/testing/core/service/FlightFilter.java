@@ -37,25 +37,9 @@ public class FlightFilter {
             predicates.add(arrivalDateBeforeDeparture());
         }
         if (flightSearchCriteria.getTransferTimeMoreThan2Hours().equals(true)) {
-            predicates.add(transferMoreThanTwoHours());
+            predicates.add(summaryTransferMoreThanTwoHours());
         }
         return predicates;
-    }
-
-    private Predicate<Flight> transferMoreThanTwoHours() {
-        return flight -> {
-            var segments = flight.getSegments();
-            boolean isFound;
-            for (int i = 0; i < segments.size(); i++) {
-                if (i + 1 < segments.size()) {
-                    isFound = isDurationMoreThanTwoHours(segments.get(i).getArrivalDate(), segments.get(i + 1).getDepartureDate());
-                    if (isFound) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        };
     }
 
     private Predicate<Flight> arrivalDateBeforeDeparture() {
@@ -68,7 +52,20 @@ public class FlightFilter {
                 .anyMatch(segment -> segment.getDepartureDate().isAfter(LocalDateTime.now()));
     }
 
-    private boolean isDurationMoreThanTwoHours(LocalDateTime arrival, LocalDateTime departure) {
-        return Duration.between(arrival, departure).toMinutes() > TWO_HOURS_DURATION;
+    private Predicate<Flight> summaryTransferMoreThanTwoHours() {
+        return flight -> {
+            var segments = flight.getSegments();
+            long summaryTimeTransfer = 0L;
+            for (int i = 0; i < segments.size(); i++) {
+                if (i + 1 < segments.size()) {
+                    summaryTimeTransfer += Duration.between(segments.get(i).getArrivalDate(),
+                            segments.get(i + 1).getDepartureDate()).toMinutes();
+                    if (summaryTimeTransfer > TWO_HOURS_DURATION) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
     }
 }
